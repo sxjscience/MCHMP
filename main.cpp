@@ -17,6 +17,7 @@
 #include "ksvd.h"
 #include "stdlib.h"
 #include "time.h"
+#include "assert.h"c
 #include "ml_openmp_common.h"
 #include "ml_graphic.h"
 #include "ml_graphic_common.h"
