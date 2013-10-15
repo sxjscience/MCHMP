@@ -188,8 +188,8 @@ void image_ksvd_test(){
   
     
     /* TEST FOR IPR*/
-    KSVD_approx(D, sparse_mat, X, T,iter);
-    IPR(D, sparse_mat, X, 0.7, T,10);
+//    KSVD_approx(D, sparse_mat, X, T,iter);
+//    IPR(D, sparse_mat, X, 0.7, T,10);
     
     /*END TEST*/
     
