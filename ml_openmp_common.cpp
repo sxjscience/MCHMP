@@ -145,11 +145,10 @@ Eigen::MatrixXd ML_OpenMP::matrix_max_pooling(const Eigen::MatrixXd &mat, const 
     u_long pooled_rows = origin_rows/pool_size;
     u_long pooled_cols = origin_cols/pool_size;
     Eigen::MatrixXd result(mat.rows(),pooled_rows*pooled_cols);
-    
+#pragma omp parallel for
     for (int i = 0 ; i<pooled_rows; i++) {
         for (int j=0; j<pooled_cols; j++) {
             std::vector<u_long> pooled_indices(pool_size*pool_size);
-#pragma omp parallel for
             for (int z =0; z<pooled_indices.size(); z++) {
                 //Related patch: (i*pool_size+z%pool_size,j*pool_size+z/pool_size) ==> (j*pool_size+z/pool_size)*origin_rows+(i*pool_size+z%pool_size)
                 pooled_indices[z] = (j*pool_size+z/pool_size)*origin_rows+(i*pool_size+z%pool_size);
