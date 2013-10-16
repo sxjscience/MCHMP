@@ -119,9 +119,9 @@ Eigen::MatrixXd ML_OpenMP::matrix_patch_cols(const Eigen::MatrixXd &mat, const u
     u_long patch_cols = (mat.cols()-patch_width)/w_step + 1;
     Eigen::MatrixXd result(patch_width*patch_height,patch_rows*patch_cols);
 #pragma omp parallel for
-    for (int i=0; i+patch_height<=mat.rows(); i+=h_step){
+    for (int i=0; i<=mat.rows()-patch_height; i+=h_step){
 #pragma omp parallel for
-        for (int j=0;j+patch_width<=mat.cols();j+=w_step){
+        for (int j=0;j<=mat.cols()-patch_width;j+=w_step){
             u_long res_col_index = (j/w_step)*patch_rows+(i/h_step);
             for (int incre_r = 0; incre_r<patch_height; incre_r++) {
                 for (int incre_c = 0; incre_c<patch_width; incre_c++) {
@@ -164,10 +164,10 @@ Eigen::MatrixXd ML_OpenMP::matrix_max_pooling(const Eigen::SparseMatrix<double> 
     u_long pooled_rows = origin_rows/pool_size;
     u_long pooled_cols = origin_cols/pool_size;
     Eigen::MatrixXd result(mat.rows(),pooled_rows*pooled_cols);
+#pragma omp parallel for
     for (int i = 0 ; i<pooled_rows; i++) {
         for (int j=0; j<pooled_cols; j++) {
             std::vector<u_long> pooled_indices(pool_size*pool_size);
-#pragma omp parallel for
             for (int z =0; z<pooled_indices.size(); z++) {
                 //Related patch: (i*pool_size+z%pool_size,j*pool_size+z/pool_size) ==> (j*pool_size+z/pool_size)*origin_rows+(i*pool_size+z%pool_size)
                 pooled_indices[z] = (j*pool_size+z/pool_size)*origin_rows+(i*pool_size+z%pool_size);
