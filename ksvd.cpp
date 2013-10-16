@@ -14,7 +14,7 @@
 #include <set>
 #include <sstream>
 #include <fstream>
-#include "omp.h"
+#include "ml_omp.h"
 #include "time.h"
 #include "ml_openmp_common.h"
 #include "ml_random.h"
@@ -1098,51 +1098,46 @@ void block_KSVD_approx_v2(Eigen::MatrixXd &dictionary, std::vector<std::vector<u
 
 
 void IPR(Eigen::MatrixXd &dictionary, Eigen::SparseMatrix<double> &sparse_mat_result,const Eigen::MatrixXd &signal_mat,const double mu0, const u_long sparsity,const u_long iter){
-    double signalF = signal_mat.squaredNorm();
-    for (u_long w=0; w<iter; w++) {
-        std::cout<<"In IPR iter "<<w<<" :"<<std::endl;
-        std::cout<<"Dictionary cols"<<dictionary.cols()<<" "<<dictionary.rows()<<std::endl;
-        std::cout<<"   SNR:"<<20*log10(signalF/(signal_mat-dictionary*sparse_mat_result).squaredNorm())<<std::endl;
-        std::cout<<"   Mutual Coherence:"<<get_mutual_coherence(dictionary)<<std::endl;
-        std::cout<<"   AMC:"<<get_AMC(dictionary)<<std::endl;
-        Eigen::MatrixXd DTD = dictionary.transpose()*dictionary;
-        for (int i=0;i<dictionary.cols();i++){
-            for (int j=0; j<dictionary.cols(); j++) {
-                if(i==j){
-                    DTD(i,j) = 1;
-                }
-                else{
-                    if (DTD(i,j)>mu0) {
-                        DTD(i,j) = mu0;
-                    }
-                    else if(DTD(i,j)<-mu0){
-                        DTD(i,j) = -mu0;
-                    }
-                }
-            }
-        }
-        std::cout<<"DTD:"<<DTD.rows()<<" "<<DTD.cols()<<std::endl;
-        Eigen::JacobiSVD<Eigen::MatrixXd> svd(DTD,Eigen::ComputeThinV|Eigen::ComputeThinU);
-        Eigen::MatrixXd lambda = svd.singularValues();
-        Eigen::MatrixXd V = svd.matrixV();
-        Eigen::MatrixXd S(dictionary.rows(),dictionary.rows());
-        for (int i=0; i<dictionary.rows(); i++) {
-                S(i,i) = lambda(i,0);
-        }
-        
-//        svd.compute(V*S*V.transpose(),Eigen::ComputeThinV|Eigen::ComputeThinU);
-//        lambda = svd.singularValues();
-//        for (int i=0; i<dictionary.rows(); i++) {
-//            S(i,i) = sqrt(lambda(i,0));
+//    double signalF = signal_mat.squaredNorm();
+//    for (u_long w=0; w<iter; w++) {
+//        std::cout<<"In IPR iter "<<w<<" :"<<std::endl;
+//        std::cout<<"Dictionary cols"<<dictionary.cols()<<" "<<dictionary.rows()<<std::endl;
+//        std::cout<<"   SNR:"<<20*log10(signalF/(signal_mat-dictionary*sparse_mat_result).squaredNorm())<<std::endl;
+//        std::cout<<"   Mutual Coherence:"<<get_mutual_coherence(dictionary)<<std::endl;
+//        std::cout<<"   AMC:"<<get_AMC(dictionary)<<std::endl;
+//        Eigen::MatrixXd DTD = dictionary.transpose()*dictionary;
+//        for (int i=0;i<dictionary.cols();i++){
+//            for (int j=0; j<dictionary.cols(); j++) {
+//                if(i==j){
+//                    DTD(i,j) = 1;
+//                }
+//                else{
+//                    if (DTD(i,j)>mu0) {
+//                        DTD(i,j) = mu0;
+//                    }
+//                    else if(DTD(i,j)<-mu0){
+//                        DTD(i,j) = -mu0;
+//                    }
+//                }
+//            }
 //        }
-//        V = svd.matrixV().leftCols(dictionary.rows());
-        dictionary = S*V.transpose();
-        std::cout<<(dictionary.transpose()*dictionary).diagonal()<<std::endl;
-        Eigen::MatrixXd DS = dictionary*sparse_mat_result;
-        Eigen::MatrixXd CC = signal_mat*DS.transpose();
-        svd.compute(CC,Eigen::ComputeFullV|Eigen::ComputeFullU);
-        dictionary = (svd.matrixV()*svd.matrixU().transpose())*dictionary;
-    }
+//        std::cout<<"DTD:"<<DTD.rows()<<" "<<DTD.cols()<<std::endl;
+//        Eigen::EigenSolver<Eigen::MatrixXd> es(DTD);
+//        Eigen::MatrixXcd lambda_comp= es.eigenvalues();
+//        Eigen::MatrixXcd Eigen_comp = es.eigenvectors();
+//        
+//        Eigen::MatrixXcd lambda(dictionary.rows(),dictionary.cols());
+//        
+//
+//        Eigen::MatrixXd DS = dictionary*sparse_mat_result;
+//        Eigen::MatrixXd CC = signal_mat*DS.transpose();
+//        svd.compute(CC,Eigen::ComputeFullV|Eigen::ComputeFullU);
+//        dictionary = (svd.matrixV()*svd.matrixU().transpose())*dictionary;
+//        std::cout<<"row:"<<dictionary.rows()<<"col:"<<dictionary.cols()<<std::endl;
+//        for (int i=0; i<dictionary.cols(); i++) {
+//            std::cout<<i<<":"<<dictionary.col(i).norm()<<std::endl;
+//        }
+//    }
 }
 
 double get_mutual_coherence(const Eigen::MatrixXd &dictionary){

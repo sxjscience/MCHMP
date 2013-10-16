@@ -8,7 +8,7 @@
 
 #include "ml_hmp.h"
 #include "ksvd.h"
-#include "omp.h"
+#include "ml_omp.h"
 #include "assert.h"
 #include "math.h"
 #include "time.h"

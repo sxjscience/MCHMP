@@ -13,7 +13,7 @@
 #include <Eigen/Dense>
 #include <Eigen/Sparse>
 #include <Eigen/Cholesky>
-#include "omp.h"
+#include "ml_omp.h"
 #include "ksvd.h"
 #include "stdlib.h"
 #include "time.h"
@@ -189,8 +189,8 @@ void image_ksvd_test(){
   
     
     /* TEST FOR IPR*/
-//    KSVD_approx(D, sparse_mat, X, T,iter);
-//    IPR(D, sparse_mat, X, 0.7, T,10);
+    KSVD_approx(D, sparse_mat, X, T,iter);
+    IPR(D, sparse_mat, X, 0.7, T,10);
     
     /*END TEST*/
     

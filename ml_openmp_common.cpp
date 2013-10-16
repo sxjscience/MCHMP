@@ -11,14 +11,15 @@
 #include "time.h"
 #include "math.h"
 
-
 void ML_OpenMP::matrix_normalization(Eigen::MatrixXd &mat,char operation){
     if(operation=='r'){
+#pragma omp parallel for
         for(u_long i=0;i<mat.rows();i++){
             mat.row(i).normalize();
         }
     }
     else if(operation=='c'){
+#pragma omp parallel for
         for(u_long i=0;i<mat.cols();i++){
             mat.col(i).normalize();
         }
@@ -40,7 +41,9 @@ Eigen::MatrixXd ML_OpenMP::matrix_with_selected_index(const Eigen::MatrixXd &mat
     u_long row_index_len = row_index.size();
     u_long col_index_len = col_index.size();
     Eigen::MatrixXd result(row_index_len,col_index_len);
+#pragma omp parallel for
     for (u_long i =0; i<row_index_len;i++) {
+#pragma omp parallel for
         for (u_long j=0; j<col_index_len; j++) {
             result(i,j) = mat(row_index[i],col_index[j]);
         }
@@ -53,6 +56,7 @@ Eigen::MatrixXd ML_OpenMP::matrix_with_selected_index(const Eigen::MatrixXd &mat
 Eigen::VectorXd ML_OpenMP::vector_with_selected_index(const Eigen::VectorXd &vec,const std::vector<u_long> &index){
     u_long index_len = index.size();
     Eigen::VectorXd result(index_len);
+#pragma omp parallel for
     for(u_long i=0;i<index_len;i++){
         result(i) = vec(index[i]);
     }
@@ -63,6 +67,7 @@ Eigen::VectorXd ML_OpenMP::vector_with_selected_index(const Eigen::VectorXd &vec
 Eigen::MatrixXd ML_OpenMP::matrix_with_selected_rows(const Eigen::MatrixXd &mat,const std::vector<u_long> &row_index){
     u_long row_len = row_index.size();
     Eigen::MatrixXd result(row_len,mat.cols());
+#pragma omp parallel for
     for (u_long i=0; i<row_len; i++) {
         result.row(i) = mat.row(row_index[i]);
     }
@@ -72,6 +77,7 @@ Eigen::MatrixXd ML_OpenMP::matrix_with_selected_rows(const Eigen::MatrixXd &mat,
 Eigen::MatrixXd ML_OpenMP::matrix_with_selected_rows(const Eigen::SparseMatrix<double> &mat,const std::vector<u_long> &row_index){
     u_long row_len = row_index.size();
     Eigen::MatrixXd result(row_len,mat.cols());
+#pragma omp parallel for
     for (u_long i=0; i<row_len; i++) {
         result.row(i) = mat.row(row_index[i]);
     }
@@ -85,6 +91,7 @@ Eigen::MatrixXd ML_OpenMP::matrix_with_selected_cols(const Eigen::MatrixXd &mat,
 
     u_long col_len = col_index.size();
     Eigen::MatrixXd result(mat.rows(),col_len);
+#pragma omp parallel for
     for (u_long i=0; i<col_len; i++) {
         result.col(i) = mat.col(col_index[i]);
     }
@@ -99,6 +106,7 @@ Eigen::SparseMatrix<double> ML_OpenMP::matrix_with_selected_cols(const Eigen::Sp
     u_long col_len = col_index.size();
     Eigen::SparseMatrix<double> result(mat.rows(),col_len);
     result.reserve(Eigen::VectorXi::Constant(result.cols(), T));
+#pragma omp parallel for
     for (u_long i=0; i<col_len; i++) {
         result.col(i) = mat.col(col_index[i]);
     }
@@ -110,8 +118,9 @@ Eigen::MatrixXd ML_OpenMP::matrix_patch_cols(const Eigen::MatrixXd &mat, const u
     u_long patch_rows = (mat.rows()-patch_height)/h_step + 1;
     u_long patch_cols = (mat.cols()-patch_width)/w_step + 1;
     Eigen::MatrixXd result(patch_width*patch_height,patch_rows*patch_cols);
-    
+#pragma omp parallel for
     for (int i=0; i+patch_height<=mat.rows(); i+=h_step){
+#pragma omp parallel for
         for (int j=0;j+patch_width<=mat.cols();j+=w_step){
             u_long res_col_index = (j/w_step)*patch_rows+(i/h_step);
             for (int incre_r = 0; incre_r<patch_height; incre_r++) {
@@ -140,6 +149,7 @@ Eigen::MatrixXd ML_OpenMP::matrix_max_pooling(const Eigen::MatrixXd &mat, const 
     for (int i = 0 ; i<pooled_rows; i++) {
         for (int j=0; j<pooled_cols; j++) {
             std::vector<u_long> pooled_indices(pool_size*pool_size);
+#pragma omp parallel for
             for (int z =0; z<pooled_indices.size(); z++) {
                 //Related patch: (i*pool_size+z%pool_size,j*pool_size+z/pool_size) ==> (j*pool_size+z/pool_size)*origin_rows+(i*pool_size+z%pool_size)
                 pooled_indices[z] = (j*pool_size+z/pool_size)*origin_rows+(i*pool_size+z%pool_size);
@@ -158,6 +168,7 @@ Eigen::MatrixXd ML_OpenMP::matrix_max_pooling(const Eigen::SparseMatrix<double> 
     for (int i = 0 ; i<pooled_rows; i++) {
         for (int j=0; j<pooled_cols; j++) {
             std::vector<u_long> pooled_indices(pool_size*pool_size);
+#pragma omp parallel for
             for (int z =0; z<pooled_indices.size(); z++) {
                 //Related patch: (i*pool_size+z%pool_size,j*pool_size+z/pool_size) ==> (j*pool_size+z/pool_size)*origin_rows+(i*pool_size+z%pool_size)
                 pooled_indices[z] = (j*pool_size+z/pool_size)*origin_rows+(i*pool_size+z%pool_size);
@@ -204,6 +215,7 @@ Eigen::MatrixXd ML_OpenMP::matrix_patch_gen(const Eigen::MatrixXd &mat, const u_
     u_long new_rows = (origin_rows-patch_size+1);
     u_long new_cols = (origin_cols-patch_size+1);
     Eigen::MatrixXd result(res_rows,res_cols);
+#pragma omp parallel for
     for (int n=0; n<result.cols(); n++) {
         for (int i=0;i<patch_size;i++){
             for (int j=0;j<patch_size ; j++) {
@@ -229,10 +241,12 @@ Eigen::MatrixXd ML_OpenMP::matrix_patch_sample(const Eigen::MatrixXd &mat, const
     u_long new_cols = (origin_cols-patch_size+1);
     Eigen::MatrixXd result = Eigen::MatrixXd::Zero(res_rows,res_cols);
     std::vector<u_long> indices(new_rows*new_cols);
+#pragma omp parallel for
     for (int i=0; i<indices.size(); i++) {
         indices[i] = i;
     }
     rng.random_permutation_n(indices,sample_num);
+#pragma omp parallel for
     for (int n=0; n<sample_num; n++) {
         u_long sel = indices[n];
         for (int i=0;i<patch_size;i++){
