@@ -185,7 +185,6 @@ void OMP_batch(Eigen::SparseMatrix<double> &result, const Eigen::MatrixXd &dicti
     std::cout<<"Time for count DTS:"<<(finish-start)/(double)CLOCKS_PER_SEC<<std::endl;
 
     
-#pragma omp parallel for
     for (u_long v = 0; v<signal_num; v++) {
         
         const Eigen::VectorXd &signal = signal_mat.col(v);
